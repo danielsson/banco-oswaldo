@@ -12,13 +12,13 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import se.banco.lang.Language;
 import se.banco.lang.Strings;
-import se.banco.pablo.PABLO.CommandCodes;
-import se.banco.pablo.PABLO.CommandFlags;
+import se.banco.pablo.PABLO.Command;
+import se.banco.pablo.PABLO.Flags;
 import se.banco.pablo.PABLOCommand;
 import se.banco.pablo.PABLOMessage;
-import se.banco.pablo.PabloNetworkListener;
-import se.banco.pablo.PabloNetworkListener.PabloReciever;
-import se.banco.server.ServerStrings;
+import se.banco.pablo.PABLONetworkListener;
+import se.banco.pablo.PABLONetworkListener.PabloReciever;
+import se.banco.server.Phrases;
 
 
 /**
@@ -28,10 +28,10 @@ import se.banco.server.ServerStrings;
  */
 public class WalterATMClient implements PabloReciever {
 	
-	private PabloNetworkListener listener;
+	private PABLONetworkListener listener;
 	private Scanner inputScanner;
 	
-	private int locale = Language.LATIN;
+	private int locale = Language.ENGLISH;
 	private volatile boolean isRunning = true;
 	
 	private LinkedBlockingQueue<PABLOCommand> queue = new LinkedBlockingQueue<PABLOCommand>();
@@ -45,7 +45,7 @@ public class WalterATMClient implements PabloReciever {
 			port = Integer.parseInt(args[1]);
 			
 		} catch (Exception ex) {
-			Strings.println(ServerStrings.USAGE, 1);
+			Strings.println(Phrases.USAGE, 1);
 			return;
 		}
 		
@@ -57,7 +57,7 @@ public class WalterATMClient implements PabloReciever {
 	 * Start the client by trying to connect to the specified server.
 	 */
 	public void run(String adress, int port) {
-		System.out.println(Strings.get(ServerStrings.TRYING_CONN, locale) + adress + ":" + port);
+		System.out.println(Strings.get(Phrases.TRYING_CONN, locale) + " " + adress + ":" + port);
 		
 		Socket socket = null;
 		BufferedOutputStream out = null;
@@ -80,9 +80,9 @@ public class WalterATMClient implements PabloReciever {
 			return;
 		}
 		
-		Strings.println(ServerStrings.CONN_TO_BNK, locale);
+		Strings.println(Phrases.CONN_TO_BNK, locale);
 		
-		listener = new PabloNetworkListener(in, this);
+		listener = new PABLONetworkListener(in, this);
 		new Thread(listener).start();
 		
 		inputScanner = new Scanner(System.in);
@@ -102,11 +102,7 @@ public class WalterATMClient implements PabloReciever {
 				
 				switch(serverCommand.getCode()) {
 				
-				case CommandCodes.REQUEST_1INT:	
-					if(serverCommand.getNumber1() == CommandCodes.MENU_SELECT) {
-						Strings.println(ServerStrings.MENU, locale);
-					}
-					
+				case Command.REQUEST_1INT:	
 					if(serverCommand.getNumber2() != 0) {
 						Strings.println(serverCommand.getNumber2(), locale);
 					}
@@ -115,7 +111,7 @@ public class WalterATMClient implements PabloReciever {
 					a = inputScanner.nextInt();
 					break;
 					
-				case CommandCodes.REQUEST_2INT:
+				case Command.REQUEST_2INT:
 					if(serverCommand.getNumber2() != 0) {
 						Strings.println(serverCommand.getNumber2(), locale);
 					}
@@ -126,11 +122,11 @@ public class WalterATMClient implements PabloReciever {
 					b = inputScanner.nextInt();
 					break;
 					
-				case CommandCodes.PRINT_MSG:
+				case Command.PRINT_MSG:
 					Strings.println(serverCommand.getNumber1(), locale);
 					continue;
 					
-				case CommandCodes.PRINT_MSG_INT:
+				case Command.PRINT_MSG_INT:
 					//Print the specified string formatted with the specified number.
 					System.out.println(
 							String.format(
@@ -138,7 +134,7 @@ public class WalterATMClient implements PabloReciever {
 									serverCommand.getNumber2()));
 					continue;
 				
-				case CommandCodes.BYE_BYE:
+				case Command.BYE_BYE:
 					stop();
 					return;
 
@@ -150,7 +146,7 @@ public class WalterATMClient implements PabloReciever {
 				cmdToSend.setCode(serverCommand.getNumber1());
 				cmdToSend.setNumber1(a);
 				cmdToSend.setNumber2(b);
-				cmdToSend.setFlags(CommandFlags.RESPONSE);
+				cmdToSend.setFlags(Flags.RESPONSE);
 				
 				cmdToSend.write(out);
 				
@@ -195,7 +191,7 @@ public class WalterATMClient implements PabloReciever {
 			throw new RuntimeException(e);
 		}
 		
-		return (cmd.getCode() == CommandCodes.BYE_BYE); //Quit on bye-bye
+		return (cmd.getCode() == Command.BYE_BYE); //Quit on bye-bye
 	}
 
 

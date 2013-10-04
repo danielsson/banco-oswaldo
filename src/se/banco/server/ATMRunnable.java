@@ -5,11 +5,11 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-import se.banco.pablo.PABLO.CommandCodes;
-import se.banco.pablo.PABLO.CommandFlags;
+import se.banco.pablo.PABLO.Command;
+import se.banco.pablo.PABLO.Flags;
 import se.banco.pablo.PABLOCommand;
 import se.banco.pablo.PABLOMessage;
-import se.banco.pablo.PabloNetworkListener;
+import se.banco.pablo.PABLONetworkListener;
 import se.banco.server.handlers.ServerCommandHandler;
 
 
@@ -25,7 +25,7 @@ public class ATMRunnable implements Runnable {
 	private OswaldATMServer server;
 	
 	private ServerCommandHandler handler;
-	private PabloNetworkListener networkListener;
+	private PABLONetworkListener networkListener;
 	
 	private Account account;
 	
@@ -48,27 +48,24 @@ public class ATMRunnable implements Runnable {
 			in = new BufferedInputStream(socket.getInputStream());
 			
 			handler = new ServerCommandHandler(out, this);
-			networkListener = new PabloNetworkListener(in, handler);
-			
+			networkListener = new PABLONetworkListener(in, handler);
 			
 			PABLOMessage.send("HELLO!!! Welcome to Bancô Oswaldo! カタカナ \n", out);
 			
 			while(isRunning) {
-				
-				
 				/*
 				 * Print login message.
 				 */
 				if(account == null) {
 					//User not logged in
-					new PABLOCommand(CommandCodes.REQUEST_2INT, CommandCodes.LOGIN, ServerStrings.PLS_LOG_IN, CommandFlags.AUTH_FAIL).write(out);
+					new PABLOCommand(Command.REQUEST_2INT, Command.LOGIN, Phrases.PLS_LOG_IN, Flags.AUTH_FAIL).write(out);
 				} 
 				
 				networkListener.listen();
 			}
 			
-			PABLOMessage.send("Goodbye \n", out);
-			new PABLOCommand(CommandCodes.BYE_BYE, 0, 0, CommandFlags.RESPONSE).write(out);
+			new PABLOCommand(Command.PRINT_MSG, Phrases.GOODBYE, 0, Flags.RESPONSE).write(out);
+			new PABLOCommand(Command.BYE_BYE, 0, 0, Flags.RESPONSE).write(out);
 			
 		} catch (IOException e) {
 			throw new RuntimeException(e);

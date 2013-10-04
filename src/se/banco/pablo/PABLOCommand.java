@@ -6,8 +6,8 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import se.banco.pablo.PABLO.CommandCodes;
-import se.banco.pablo.PABLO.CommandFormat;
+import se.banco.pablo.PABLO.Command;
+import se.banco.pablo.PABLO.Format;
 
 
 /**
@@ -18,7 +18,7 @@ import se.banco.pablo.PABLO.CommandFormat;
  */
 public class PABLOCommand {
 	
-	private int code = CommandCodes.NOP;
+	private int code = Command.NOP;
 	
 	int number1 = 0;
 	int number2 = 0;
@@ -44,7 +44,7 @@ public class PABLOCommand {
 	 */
 	public static PABLOCommand parse(InputStream stream) throws IOException {
 		
-		byte[] packet = new byte[CommandFormat.SIZE];
+		byte[] packet = new byte[Format.SIZE];
 		
 		int bytes_read = stream.read(packet);
 		
@@ -65,15 +65,15 @@ public class PABLOCommand {
 	public static PABLOCommand parse(byte[] packet) throws IOException {
 		PABLOCommand msg = new PABLOCommand();
 		
-		ByteBuffer buffer = ByteBuffer.allocate(CommandFormat.SIZE);
+		ByteBuffer buffer = ByteBuffer.allocate(Format.SIZE);
 		buffer.put(packet);
 		
 		buffer.position(0);
 		
-		msg.setCode(    buffer.get(    CommandFormat.CMD_INDEX) & 0xFF); //Fix java signedness weirdness
-		msg.setNumber1( buffer.getInt( CommandFormat.NUM1_INDEX));
-		msg.setNumber2( buffer.getInt( CommandFormat.NUM2_INDEX));
-		msg.setFlags(   buffer.get(    CommandFormat.FLAG_INDEX));
+		msg.setCode(    buffer.get(    Format.CMD_INDEX) & 0xFF); //Fix java signedness weirdness
+		msg.setNumber1( buffer.getInt( Format.NUM1_INDEX));
+		msg.setNumber2( buffer.getInt( Format.NUM2_INDEX));
+		msg.setFlags(   buffer.get(    Format.FLAG_INDEX));
 		
 		if(PABLO.DEBUG) System.out.println("Recieved: " + Arrays.toString(buffer.array()));
 		
@@ -87,7 +87,7 @@ public class PABLOCommand {
 	 * @throws IOException
 	 */
 	public void write(OutputStream stream) throws IOException {
-		ByteBuffer buffer = ByteBuffer.allocate(CommandFormat.SIZE);
+		ByteBuffer buffer = ByteBuffer.allocate(Format.SIZE);
 		
 		
 		buffer.put(new Integer(code).byteValue());
@@ -144,7 +144,7 @@ public class PABLOCommand {
 	public static void main(String[] args) {
 		PABLOCommand cmd = new PABLOCommand();
 		
-		cmd.setCode(CommandCodes.LOGIN_RES);
+		cmd.setCode(Command.LOGIN_RES);
 		cmd.setNumber1(78);
 		cmd.setNumber2(99);
 		

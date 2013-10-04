@@ -44,13 +44,14 @@ public class Strings {
 	 */
 	public static String get(int stringId, int locale) {
 		
-		if(!has(locale)) {
-			if(!load(locale)) return null;
-		}
+		if(!has(locale))
+			if(!load(locale))
+				return languages.get(1).get(stringId);
+		
 		
 		String retval = languages.get(locale).get(stringId);
 		
-		//Fallback to english
+		//Fallback to english if there is no translation for this phrase
 		if(retval == null) {
 			retval = languages.get(1).get(stringId);
 		}
@@ -80,6 +81,8 @@ public class Strings {
 		HashMap<Integer, String> map = new HashMap<Integer, String>();
 		Scanner scanner = null;
 		
+		languages.put(locale, map); //This prevents further attempts to read the file if this fails.
+		
 		try {
 			scanner = new Scanner(new File("lang/" + locale + ".lang"));
 			
@@ -96,8 +99,6 @@ public class Strings {
 		} finally {
 			if(scanner != null) scanner.close();
 		}
-		
-		languages.put(locale, map);
 		
 		return true;
 	}

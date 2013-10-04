@@ -4,8 +4,10 @@ import java.nio.charset.Charset;
 
 
 /**
- * General constants and utility functions for PABLO - the Protocol for Advanced
- * Bank, Legal and Ortodontal communication.
+ * Protocol definitions for PABLO - the Protocol for Advanced
+ * Bank, Legal and Odontologic communication.
+ * 
+ * TODO: Fix holes in Odontologic command spec.
  * 
  * @author mattias
  *
@@ -18,7 +20,7 @@ public class PABLO {
 	/**
 	 * Binary format offsets.
 	 */
-	public static class CommandFormat {
+	public static class Format {
 		public static final int SIZE = 10;
 		
 		public static final int CMD_INDEX = 0;
@@ -40,7 +42,7 @@ public class PABLO {
 	/**
 	 * Supported commands in the PABLO standard.
 	 */
-	public static class CommandCodes {
+	public static class Command {
 		public static final int BALANCE        = 0x01;
 		public static final int WITHDRAW       = 0x02;
 		public static final int DEPOSIT        = 0x03;
@@ -63,7 +65,7 @@ public class PABLO {
 	/**
 	 * Supported PABLO command flags.
 	 */
-	public static class CommandFlags {
+	public static class Flags {
 		public static final byte FAILURE        = 0x01;
 		public static final byte AUTH_FAIL      = 0x02;
 		public static final byte REQUEST        = 0x04;

@@ -3,7 +3,7 @@ package se.banco.pablo;
 import java.io.IOException;
 import java.io.InputStream;
 
-import se.banco.pablo.PABLO.CommandCodes;
+import se.banco.pablo.PABLO.Command;
 
 
 /**
@@ -12,7 +12,7 @@ import se.banco.pablo.PABLO.CommandCodes;
  * @author mattias
  *
  */
-public class PabloNetworkListener implements Runnable {
+public class PABLONetworkListener implements Runnable {
 	
 	public interface PabloReciever {
 		
@@ -46,7 +46,7 @@ public class PabloNetworkListener implements Runnable {
 	
 	
 	
-	public PabloNetworkListener(InputStream in, PabloReciever reciever) {
+	public PABLONetworkListener(InputStream in, PabloReciever reciever) {
 		this.in = in;
 		this.reciever = reciever;
 	}
@@ -85,7 +85,7 @@ public class PabloNetworkListener implements Runnable {
 			quit();
 			break;
 			
-		case CommandCodes.MESSAGE_FORMAT:
+		case Command.MESSAGE_FORMAT:
 			PABLOMessage msg = PABLOMessage.parse(in);
 			if(reciever.recieve(msg)) quit();
 			break;

@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import se.banco.pablo.PABLO.CommandCodes;
+import se.banco.pablo.PABLO.Command;
 
 
 /**
@@ -39,7 +39,7 @@ public class PABLOMessage {
 		PABLOMessage msg = new PABLOMessage();
 		
 		//Initial byte must be the magic value for message format
-		if(stream.read() != CommandCodes.MESSAGE_FORMAT) {
+		if(stream.read() != Command.MESSAGE_FORMAT) {
 			throw new IOException("The stream is not in message format.");
 		}
 		
@@ -66,7 +66,7 @@ public class PABLOMessage {
 		int message_size = 2 + string_buffer.length;
 		ByteBuffer buffer = ByteBuffer.allocate(message_size);
 		
-		buffer.put(new Integer(CommandCodes.MESSAGE_FORMAT).byteValue());
+		buffer.put(new Integer(Command.MESSAGE_FORMAT).byteValue());
 		buffer.put(new Integer(string_buffer.length).byteValue());
 		buffer.put(string_buffer);
 		

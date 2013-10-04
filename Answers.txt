@@ -1,0 +1,100 @@
+1: Den printar bara tills dess att det kommer en rad som börjar på (1). 
+
+
+
+
+Protocol: Two formats: Command-format and message format.
+
+Message format
+--------------
+
+    Bytes   |   Function
+    ----------------------
+    0       |   Message format identifier (always 0xFE)
+    1       |   Content length, unsigned integer
+    2..n    |   Message string, n = 2 + content length
+
+
+
+Command format
+--------------
+
+Every command message is exactly 10 bytes, the format looks as follows.
+
+    Bytes   |   Function
+    ----------------------
+    0       |   Command byte
+    1..4    |   4-byte integer nr 1
+    5..8    |   4-byte integer nr 2
+    9       |   Flags
+    
+Reserved command codes:
+
+    Code    |   Function
+    ----------------------
+    0x0             |   Reserved. Unwise to begin with null-byte.
+    0x01 .. 0x4F    |   Reserved for two-way commands.
+    0x50 .. 0x6F    |   Reserved for server responses.
+    0x70 .. 0x8F    |   Reserved for client requests.
+    0x90 .. 0xEF    |   Not reserved.
+    0xF0 .. 0xFF    |   Reserved for special commands.
+    0xFE            |   Reserved for message format.
+    
+The flag field is a bitmask built from the following enumeration:
+
+    Value   |   Flag
+    ---------------------
+    0x01    |   Failure
+    0x02    |   Unauthorized
+    0x04    |   Request
+    0x08    |   Response
+    
+Valid command codes:
+
+hex     |   command     |     nr 1      |   nr 2    |   F   |
+------------------------------------------------------------
+0x01    |   balance     |   amount      |    -      |       |
+0x02    |   withdrawl   |   amount      |   code    |       |
+0x03    |   deposit     |   amount      |    -      |       |
+0x04    |adjust balance |   new balance |    -      |       |
+        |               |               |           |       |
+0x50    | login resp    |   0 if fail   |    -      |       | //Tell the client how the login attempt went.
+0x51    | Request 1 int |   return byte | msg code  |       |
+0x52    | Request 2 int |   return byte | msg code  |       |
+0x53    | Print message |   msg code    |           |       |
+0x54    |print msg w int|   msg code    |int 2 print|       |
+        |               |               |           |       |
+0x70    | login req     |  account nr.  |   pin     |       |
+0x71    | menu select   |  option       |           |       | // The user has selected a root menu item
+        |               |               |           |       |
+0xFD    | NOP           |               |           |       |
+0xFE    | Reserved for the message format                   |
+0xFF    | hastalavista  |       -       |    -      |       |
+
+------------------------------------------------------------
+
+
+
+Scenarios
+---------
+
+Login:
+
+Client: (Connected)
+Server: | 0x70 | .. | .. | 0x0B | (Note that the final byte is Failure & Unauthorized & Response)
+Client: | 0x70 | 112233 | 1234 | 0x04 |
+Server: | 0x50 | 1 | .. | .. | (Success)
+
+Command-agnostic input:
+
+Client: | 0x71 | 3 | .. | .. | (User selected option 3, deposit)
+Server: | 0x51 | 0x03 | .. | .. | (Server requests an int to be sent to command 0x03)
+Client: | 0x03 | 21 | .. | .. | (User wants to deposit 21, information is sent to server)
+
+
+
+
+
+
+
+

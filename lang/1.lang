@@ -1,0 +1,11 @@
+1 Welcome to Bank Oswaldo! 
+2 Please log in by first entering your account number and then your pin code. 
+3 MENY: (1) Balance, (2) Withdrawl, (3) Deposit, (4) Exit.
+4 Your balance is: %d
+5 Please enter the single-use code given to you to authorise the withdrawl.
+6 Goodbye! :-)
+7 Trying to connect to 
+8 Connecting to bank
+9 Usage: <address> <port>
+10 Please enter the amount of STÅLAR you wish to withdraw, followed by one of your single-use codes
+11 Please enter the amount of STÅLAR you wish to deposit 

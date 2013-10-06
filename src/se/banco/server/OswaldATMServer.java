@@ -26,7 +26,7 @@ public class OswaldATMServer {
 	
 	private Map<Integer, Account> accounts = Account.getDefaultAccounts();
 	
-	
+	private String welcomeMessage = "Welcome to Banco Oswaldo";
 	
 	public static void main(String[] args) {
 		
@@ -72,5 +72,17 @@ public class OswaldATMServer {
 	
 	public Map<Integer, Account> getAccounts() {
 		return accounts;
+	}
+
+
+
+	public String getWelcomeMessage() {
+		return welcomeMessage;
+	}
+
+
+
+	public void setWelcomeMessage(String welcomeMessage) {
+		this.welcomeMessage = welcomeMessage;
 	}
 }

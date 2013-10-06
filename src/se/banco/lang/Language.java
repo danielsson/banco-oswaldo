@@ -1,11 +1,35 @@
 package se.banco.lang;
 
 
-public interface Language {
-	public static final int ENGLISH    = 1;
-	public static final int LATIN      = 2;
-	public static final int JAPANESE   = 3;
-	public static final int GERMAN     = 4;
-	public static final int SWAHILI    = 5;
-	public static final int TAIWANESE_ENGLISH   = -1;
+public enum Language {
+	ENGLISH    (1),
+	LATIN      (2),
+	JAPANESE   (3),
+	GERMAN     (4),
+	SWAHILI    (5);
+	
+	int code;
+	private Language(int code) {
+		this.code = code;
+	}
+	
+	public int getCode() {
+		return code;
+	}
+	
+	public static String printLanguages() {
+		StringBuilder sb = new StringBuilder();
+		
+		for(Language lang : Language.values()) {
+			sb.append("(");
+			sb.append(lang.getCode());
+			sb.append(")");
+			sb.append(lang.toString());
+			sb.append(", ");
+		}
+		
+		sb.append("\n");
+		return sb.toString();
+		
+	}
 }

@@ -1,6 +1,6 @@
 1 Welcome to Bank Oswaldo! 
 2 Please log in by first entering your account number and then your pin code. 
-3 MENY: (1) Balance, (2) Withdrawl, (3) Deposit, (4) Exit.
+3 MENY: (1) Balance, (2) Withdrawl, (3) Deposit, (4) Change Language, (5) Exit.
 4 Your balance is: %d
 5 Please enter the amount of STÅLAR you wish to withdraw, followed by one of your single-use codes
 6 Goodbye! :-)
@@ -9,3 +9,8 @@
 9 Usage: <address> <port>
 10 Please enter the amount of STÅLAR you wish to deposit 
 11 Incorrect code
+12 Select your language.
+13 Unknown language
+14 Please set the new welcome message
+15 MENY: (1) Balance, (2) Withdrawl, (3) Deposit, (4) Change Language, (5) Exit, (6) Set welcome message
+16 Cant do that, Dave.

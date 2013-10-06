@@ -13,6 +13,11 @@ public class Phrases {
 	public static final int USAGE	       = 9;
 	public static final int AMNT_DEPOSIT   = 10;
 	public static final int WRONG_CODE     = 11;
+	public static final int SELECT_LANG    = 12;
+	public static final int UNKNOWN_LANG   = 13;
+	public static final int SET_WELCOME    = 14;
+	public static final int BANK_MENU      = 15;
+	public static final int BANK_UNAUTH    = 16;
 	
 
 }

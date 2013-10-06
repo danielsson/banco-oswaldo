@@ -3,10 +3,12 @@ package se.banco.server.handlers;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import se.banco.lang.Language;
+import se.banco.lang.Strings;
 import se.banco.pablo.PABLO.Command;
 import se.banco.pablo.PABLO.Flags;
+import se.banco.pablo.PABLOBinary;
 import se.banco.pablo.PABLOCommand;
-import se.banco.pablo.PABLOMessage;
 import se.banco.pablo.PABLONetworkListener.PabloReciever;
 import se.banco.server.ATMRunnable;
 import se.banco.server.Account;
@@ -31,8 +33,22 @@ public class ServerCommandHandler implements PabloReciever {
 
 	
 	@Override
-	public boolean recieve(PABLOMessage msg) throws IOException {
-		System.out.print(msg.getMessage());
+	public boolean recieve(PABLOBinary msg) throws IOException {
+		
+		switch(msg.getCode()) {
+		case Command.MESSAGE_FORMAT:
+			System.out.print(msg.getMessage());
+			break;
+			
+		case Command.UPDATE_WELCOME:
+			if(runnable.getAccount() != null && runnable.getAccount().isAdmin()) {
+				runnable.getServer().setWelcomeMessage(msg.getMessage());
+			} else {
+				clientShowString(Phrases.BANK_UNAUTH);
+			}
+			showMenu();
+		}
+		
 		return false;
 	}
 
@@ -83,7 +99,24 @@ public class ServerCommandHandler implements PabloReciever {
 			
 			clientShowBalance();
 			break;
+		
+		case Command.LANG_SELECT:
+			new PABLOCommand(Command.SET_LANG, cmd.getNumber1(), 0, Flags.RESPONSE).write(out);
+			return retval;
 			
+		case Command.GET_LANGUAGE:
+			PABLOBinary langDownload = new PABLOBinary();
+			
+			byte[] language = Strings.getLanguageDescriptor(cmd.getNumber1());
+			
+			if(language != null) {
+				langDownload.setData(language);
+				langDownload.write(out, Command.LANG_DOWNLOAD);
+			
+			} else {
+				clientShowString(Phrases.UNKNOWN_LANG);
+			}
+			break;
 		}
 		
 		if(runnable.getAccount() != null) {
@@ -101,7 +134,6 @@ public class ServerCommandHandler implements PabloReciever {
 	 * @throws IOException
 	 */
 	private boolean menuResponse(PABLOCommand cmd) throws IOException {
-		PABLOCommand retval = new PABLOCommand();
 		
 		/*
 		 * NOTE ON THE MENU
@@ -134,12 +166,34 @@ public class ServerCommandHandler implements PabloReciever {
 			
 			break;
 			
+		case Command.LANG_SELECT:
+			clientShowString(Phrases.SELECT_LANG);
+			PABLOBinary.send(Language.printLanguages(), out);
 			
-		case 4: //TODO:Exit hardcoded
+			new PABLOCommand(
+					Command.REQUEST_1INT,
+					Command.LANG_SELECT,
+					0,
+					Flags.REQUEST)
+				.write(out);
+			
+			break;
+			
+		case 5: //TODO:Exit hardcoded
 			return true;
 			
+			
+		case 6: 
+			new PABLOCommand(
+					Command.REQUEST_STRING,
+					Command.UPDATE_WELCOME,
+					Phrases.SET_WELCOME,
+					Flags.REQUEST)
+				.write(out);
+			break;
+			
 		default:
-			PABLOMessage.send("Unknown option \n", out);
+			PABLOBinary.send("Unknown option \n", out);
 			showMenu();
 		}
 		
@@ -158,7 +212,11 @@ public class ServerCommandHandler implements PabloReciever {
 	 * @throws IOException
 	 */
 	private void showMenu() throws IOException {
-		new PABLOCommand(Command.REQUEST_1INT, Command.MENU_SELECT, Phrases.MENU, Flags.REQUEST).write(out);
+		if(runnable.getAccount() != null  && runnable.getAccount().isAdmin()) {
+			new PABLOCommand(Command.REQUEST_1INT, Command.MENU_SELECT, Phrases.BANK_MENU, Flags.REQUEST).write(out);
+		} else {
+			new PABLOCommand(Command.REQUEST_1INT, Command.MENU_SELECT, Phrases.MENU, Flags.REQUEST).write(out);
+		}
 	}
 	
 	
@@ -178,7 +236,7 @@ public class ServerCommandHandler implements PabloReciever {
 	 * @throws IOException
 	 */
 	private void clientShowString(int stringId) throws IOException {
-		clientShowString(stringId, 0);
+		new PABLOCommand(Command.PRINT_MSG, stringId, 0, Flags.RESPONSE).write(out);
 	}
 	
 	/**

@@ -21,7 +21,7 @@ public class PABLONetworkListener implements Runnable {
 		 * @param msg The message.
 		 * @return true if this should close the connection.
 		 */
-		public boolean recieve(PABLOMessage msg) throws IOException;
+		public boolean recieve(PABLOBinary msg) throws IOException;
 		
 		/**
 		 * Recieve a command message from the network.
@@ -85,8 +85,10 @@ public class PABLONetworkListener implements Runnable {
 			quit();
 			break;
 			
+		case Command.UPDATE_WELCOME:
 		case Command.MESSAGE_FORMAT:
-			PABLOMessage msg = PABLOMessage.parse(in);
+		case Command.LANG_DOWNLOAD:
+			PABLOBinary msg = PABLOBinary.parse(in);
 			if(reciever.recieve(msg)) quit();
 			break;
 			

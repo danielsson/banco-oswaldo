@@ -1,7 +1,13 @@
 package se.banco.lang;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -31,8 +37,8 @@ public class Strings {
 	 */
 	private static HashMap<Integer, HashMap<Integer, String>> languages = new HashMap<Integer, HashMap<Integer,String>>();
 	
-	private static boolean has(int locale) {
-		return languages.containsKey(locale);
+	public static boolean has(int locale) {
+		return (languages.containsKey(locale) || getLanguageFile(locale).exists());
 	}
 	
 	
@@ -44,7 +50,7 @@ public class Strings {
 	 */
 	public static String get(int stringId, int locale) {
 		
-		if(!has(locale))
+		if(!languages.containsKey(locale))
 			if(!load(locale))
 				return languages.get(1).get(stringId);
 		
@@ -63,6 +69,52 @@ public class Strings {
 	
 	
 	/**
+	 * Read the entire file into a byte array. TODO: This is bad in so many ways.
+	 * @param locale
+	 * @return
+	 * @throws IOException
+	 */
+	public static byte[] getLanguageDescriptor(int locale) throws IOException {
+		File file = getLanguageFile(locale);
+		if(!has(locale)) {
+			return null;
+		}
+		
+		byte[] retval = new byte[(int) file.length()];
+		
+		InputStream stream = null;
+		try {
+			stream = new BufferedInputStream(new FileInputStream(file));
+			stream.read(retval);
+			
+		} catch (IOException ex) {
+			throw ex;
+		} finally {
+			if(stream != null) stream.close();
+		}
+		
+		return retval;
+	}
+	
+	
+	public static void insert(byte[] langBytes, int locale) throws IOException {
+		File file = getLanguageFile(locale);
+		file.createNewFile();
+		
+		OutputStream stream = null;
+		try {
+			stream = new BufferedOutputStream(new FileOutputStream(file));
+			stream.write(langBytes);
+			
+		} finally {
+			if (stream != null) stream.close();
+		}
+		
+		load(locale);
+	}
+	
+	
+	/**
 	 * Utility function for immediately printing the string requested.
 	 * @param stringId
 	 * @param locale
@@ -71,6 +123,9 @@ public class Strings {
 		System.out.println(get(stringId, locale));
 	}
 	
+	private static File getLanguageFile(int locale) {
+		return new File("lang/" + locale + ".lang");
+	}
 	
 	/**
 	 * Attempt to load the specified language from the file system.
@@ -84,7 +139,7 @@ public class Strings {
 		languages.put(locale, map); //This prevents further attempts to read the file if this fails.
 		
 		try {
-			scanner = new Scanner(new File("lang/" + locale + ".lang"));
+			scanner = new Scanner(getLanguageFile(locale));
 			
 			while(scanner.hasNext()) {
 				int stringId = scanner.nextInt();
@@ -93,7 +148,6 @@ public class Strings {
 			}
 			
 		} catch(IOException ex) {
-			ex.printStackTrace();
 			return false;
 			
 		} finally {

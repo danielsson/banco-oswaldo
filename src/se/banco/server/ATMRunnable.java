@@ -8,7 +8,7 @@ import java.net.Socket;
 import se.banco.pablo.PABLO.Command;
 import se.banco.pablo.PABLO.Flags;
 import se.banco.pablo.PABLOCommand;
-import se.banco.pablo.PABLOMessage;
+import se.banco.pablo.PABLOBinary;
 import se.banco.pablo.PABLONetworkListener;
 import se.banco.server.handlers.ServerCommandHandler;
 
@@ -28,6 +28,7 @@ public class ATMRunnable implements Runnable {
 	private PABLONetworkListener networkListener;
 	
 	private Account account;
+	
 	
 	
 	private volatile boolean isRunning = true;
@@ -50,7 +51,7 @@ public class ATMRunnable implements Runnable {
 			handler = new ServerCommandHandler(out, this);
 			networkListener = new PABLONetworkListener(in, handler);
 			
-			PABLOMessage.send("HELLO!!! Welcome to Bancô Oswaldo! カタカナ \n", out);
+			PABLOBinary.send(server.getWelcomeMessage(), out);
 			
 			while(isRunning) {
 				/*

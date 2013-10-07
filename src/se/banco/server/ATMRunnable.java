@@ -51,7 +51,7 @@ public class ATMRunnable implements Runnable {
 			handler = new ServerCommandHandler(out, this);
 			networkListener = new PABLONetworkListener(in, handler);
 			
-			PABLOBinary.send(server.getWelcomeMessage(), out);
+			PABLOBinary.println(server.getWelcomeMessage(), out);
 			
 			while(isRunning) {
 				/*

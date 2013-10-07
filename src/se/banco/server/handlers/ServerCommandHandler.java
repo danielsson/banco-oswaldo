@@ -9,6 +9,7 @@ import se.banco.pablo.PABLO.Command;
 import se.banco.pablo.PABLO.Flags;
 import se.banco.pablo.PABLOBinary;
 import se.banco.pablo.PABLOCommand;
+import se.banco.pablo.PABLONetworkListener;
 import se.banco.pablo.PABLONetworkListener.PabloReciever;
 import se.banco.server.ATMRunnable;
 import se.banco.server.Account;
@@ -17,7 +18,7 @@ import se.banco.server.Phrases;
 
 
 /**
- * Handle the different commands sent to the server.
+ * Handle messages sent to the oswald server. This should be used as a reciever to a {@link PABLONetworkListener}.
  * @author mattias
  *
  */
@@ -41,14 +42,20 @@ public class ServerCommandHandler implements PabloReciever {
 			break;
 			
 		case Command.UPDATE_WELCOME:
-			if(runnable.getAccount() != null && runnable.getAccount().isAdmin()) {
-				runnable.getServer().setWelcomeMessage(msg.getMessage());
-			} else {
-				clientShowString(Phrases.BANK_UNAUTH);
+			if(runnable.getAccount() == null || !runnable.getAccount().isAdmin()) {
+				clientShowString(Phrases.CANT_DO_THAT);
+				break;
 			}
-			showMenu();
+			
+			if(msg.getData().length > 80) {
+				clientShowString(Phrases.WELCOME_TOO_LNG);
+				break;
+			}
+			
+			runnable.getServer().setWelcomeMessage(msg.getMessage());
 		}
 		
+		showMenu();
 		return false;
 	}
 
@@ -168,7 +175,7 @@ public class ServerCommandHandler implements PabloReciever {
 			
 		case Command.LANG_SELECT:
 			clientShowString(Phrases.SELECT_LANG);
-			PABLOBinary.send(Language.printLanguages(), out);
+			PABLOBinary.println(Language.printLanguages(), out);
 			
 			new PABLOCommand(
 					Command.REQUEST_1INT,
@@ -183,7 +190,13 @@ public class ServerCommandHandler implements PabloReciever {
 			return true;
 			
 			
-		case 6: 
+		case 6:
+			if(runnable.getAccount() == null || !runnable.getAccount().isAdmin()) {
+				clientShowString(Phrases.CANT_DO_THAT);
+				showMenu();
+				return false;
+			}
+			
 			new PABLOCommand(
 					Command.REQUEST_STRING,
 					Command.UPDATE_WELCOME,
@@ -193,7 +206,7 @@ public class ServerCommandHandler implements PabloReciever {
 			break;
 			
 		default:
-			PABLOBinary.send("Unknown option \n", out);
+			clientShowString(Phrases.CANT_DO_THAT);
 			showMenu();
 		}
 		

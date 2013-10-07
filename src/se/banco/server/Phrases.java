@@ -17,7 +17,8 @@ public class Phrases {
 	public static final int UNKNOWN_LANG   = 13;
 	public static final int SET_WELCOME    = 14;
 	public static final int BANK_MENU      = 15;
-	public static final int BANK_UNAUTH    = 16;
+	public static final int CANT_DO_THAT    = 16;
+	public static final int WELCOME_TOO_LNG= 17;
 	
 
 }

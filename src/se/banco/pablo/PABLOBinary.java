@@ -90,7 +90,7 @@ public class PABLOBinary {
 	 * @param out
 	 * @throws IOException
 	 */
-	public static void send(String msg, OutputStream out) throws IOException {
+	public static void println(String msg, OutputStream out) throws IOException {
 		new PABLOBinary(msg).write(out, Command.MESSAGE_FORMAT);
 	}
 	

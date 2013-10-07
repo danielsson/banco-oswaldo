@@ -1,9 +1,10 @@
 1: Den printar bara tills dess att det kommer en rad som börjar på (1). 
 
 
+PABLO definition
+================
 
-
-Protocol: Two formats: Command-format and message format.
+Protocol: Two formats: Binary-format and command-format.
 
 Binary format
 --------------
@@ -21,7 +22,10 @@ Binary format
 Command format
 --------------
 
-Every command message is exactly 10 bytes, the format looks as follows.
+	Every command message is exactly 10 bytes, the format looks as follows. The first
+	byte (the "command byte") identifies the action to be executed by the reciever. The
+	following two integers can be used to transfer data relevant to the command. The
+	last byte is one or more flags used to carry addtional information.
 
     Bytes   |   Function
     ----------------------
@@ -29,20 +33,30 @@ Every command message is exactly 10 bytes, the format looks as follows.
     1..4    |   4-byte integer nr 1
     5..8    |   4-byte integer nr 2
     9       |   Flags
-    
-Reserved command codes:
+
+
+   
+Specified Command Codes
+=======================
+
+Designated command ranges:
+--------------------------
 
     Code    |   Function
     ----------------------
     0x0             |   Reserved. Unwise to begin with null-byte.
     0x01 .. 0x4F    |   Reserved for bank action commands.
-    0x50 .. 0x6F    |   Reserved for server requests.
-    0x70 .. 0x8F    |   Reserved for client requests.
+    0x50 .. 0x6F    |   Reserved for client actions. (UI related methods, etc)
+    0x70 .. 0x8F    |   Reserved for server actions.
     0x90 .. 0xEF    |   Not reserved.
-    0xF0 .. 0xFF    |   Reserved for special commands.
-    0xFE            |   Reserved for message format.
+    0xF0 .. 0xFD    |   Reserved for binary commands.
+    0xFE, OxFF      |   Special
     
-The flag field is a bitmask built from the following enumeration:
+    
+The flag field:
+---------------
+    
+	The flag field is a bitmask built from the following enumeration:
 
     Value   |   Flag
     ---------------------
@@ -51,57 +65,152 @@ The flag field is a bitmask built from the following enumeration:
     0x04    |   Request
     0x08    |   Response
     
-Valid command codes:
+   
+Command Codes and their fields:
+-------------------------------
 
-hex     |   command     |     nr 1      |   nr 2    |Binary |
-------------------------------------------------------------
-0x01    |   balance     |               |    -      |       |
-0x02    |   withdraw    |   amount      |   code    |       |
-0x03    |   deposit     |   amount      |    -      |       |
-0x04    | lang. select  |   lang code   |    -      |       |
-        |               |               |           |       |
-0x50    | login resp    |   0 if fail   |    -      |       | //Tell the client how the login attempt went.
-0x51    | Request 1 int |   return byte | msg code  |       |
-0x52    | Request 2 int |   return byte | msg code  |       |
-0x53    | Request string|   return code | msg code  |       |
-0x54    | Print message |   msg code    |           |       |
-0x55    |print msg w int|   msg code    |int 2 print|       |
-0x56    | set language  |   lang code   |           |       |
-        |               |               |           |       |
-0x70    | login req     |  account nr.  |   pin     |       |
-0x71    | menu select   |  option       |           |       | // The user has selected a root menu item
-0x72    | req lang dwld |  lang code    |           |       | 
-        |               |               |           |       |
-0xFB    | Update welcome message                    |   B   |
-0xFC    | Language update                           |   B   |
-0xFD    | Print the supplied data as string         |   B   |
-0xFE    | NOP           |               |           |       |
-0xFF    | hastalavista  |       -       |    -      |       |
-
-------------------------------------------------------------
-
-
+	hex     |   command               |     nr 1      |   nr 2    |Binary |
+	-----------------------------------------------------------------------
+	0x01    | Balance                 |               |    -      |       |
+	0x02    | Withdraw                |   amount      |   code    |       | //Second param is a single use code.
+	0x03    | Deposit                 |   amount      |    -      |       |
+	0x04    | Language select         |   lang code   |    -      |       |
+	        |                         |               |           |       |
+	0x50    | login resp              |   0 if fail   |    -      |       | //Tell the client how the login attempt went.
+	0x51    | Request 1 int           |   return cmd  | msg code  |       |
+	0x52    | Request 2 int           |   return cmd  | msg code  |       |
+	0x53    | Request string          |   return cmd  | msg code  |       |
+	0x54    | Print message           |   msg code    |           |       |
+	0x55    | Print msg w int         |   msg code    |int 2 print|       |
+	0x56    | set language            |   lang code   |           |       |
+	        |                         |               |           |       |
+	0x70    | Login                   |  account nr.  |   pin     |       |
+	0x71    | Menu select             |  option       |           |       | // The user has selected a root menu item
+	0x72    | Request lang download   |  lang code    |           |       | 
+	        |                         |               |           |       |
+	0xFB    | Update welcomemessage                               |   B   |
+	0xFC    | Language update                                     |   B   | 
+	0xFD    | Print the supplied data as string                   |   B   |
+	        |                         |               |           |       |
+	0xFE    | NOP                     |               |           |       |
+	0xFF    | BYE                     |       -       |    -      |       | //Close the connection
+	
+	-----------------------------------------------------------------------
+	
+	NOTES:
+	
+	1. The commands marked with "B" must be sent using the binary format.
+	2. "msg code" Denotes a reference to a string to be displayed before the
+       action is carried out.
+    3. "return cmd" Is the command to execute the collected values with.
+    4. The protocol specifies commands for transferring and setting languages
+       but does not specify the format of the integer specifying indvidual messages
+       nor the format of the binary file transferred over the update command(0xFC).
+	
+	
+	
 
 Scenarios
----------
+=========
 
-Login:
+	The protocol assumes that the client is dumb and does not contain any kind of business logic. 
+	Therefore, all actions must be initiated by the server.
+	
+	The server must take the first step after connection establishment.
+	
+	
+	                         (Connection Established)                
+	            CLIENT             COMMAND SENT           SERVER             
+	                      |                            |  
+	                      |  <-------Print binary----  |  Sends the welcome message
+	                      |                            |  
+	                      |  <-------Request 2 int---  |  Asks for two ints to be sent to login(0x70),
+	                      |                            |  after printing a selected msg code.
+	                      |                            |  
+	Collects two  ints    |  --------Login---------->  | 
+	from the user and     |                            | 
+	sends it to the       |                            |  
+	command specified     |                            |  
+	in the command from   |                            |  
+	the server.           |                            |  
+	                      |                            |  
+	                      |                            |  (Login is successful)
+	                      |  <-------Request 1 int---  |  Asks for one int to be sent to menu_select(0x71),
+	                      |                            |  after printing a selected msg code.(In this case,
+	                      |                            |  the msg code is the translated menu.)
+	                      |                            |  
+	Collects one int      |  --------Menu Select---->  | 
+	and sends it to the   |                            | 
+	command specified     |                            | 
+	by the server in the  |                            | 
+	previous request.     |                            | 
+	                      |                            |  
+	                      |                            |  (User selected Balance, #1)
+	                      |  <-------Print msg int---  |  Tells the client to print the specified string
+	                      |                            |  with the specified integer formatted into the string
+	                      |                            |  the msg code is the translated menu.)
+	                      |                            |  
+	                      |  <-------Request 1 int---  |  Asks for one int to be sent to menu_select(0x71),
+	                      |                            |  after printing a selected msg code.(In this case,
+	                      |                            |  the msg code is the translated menu.)
+	                      |                            |  	                    
+	Collects one int      |  --------Menu Select---->  | 
+	and sends it to the   |                            | 
+	command specified     |                            | 
+	by the server in the  |                            | 
+	previous request.     |                            | 
+	                      |                            |  
+	                      |                            |  (User selected Withdraw, #2)
+	                      |  <-------Request 2 int---  |  Asks for two ints to be sent to withdraw(0x70),
+	                      |                            |  after printing a selected msg code.
+	Collects two  ints    |  --------Withdraw------->  |  
+	from the user and     |                            | 
+	sends it to the       |                            |  
+	command specified     |                            |  
+	in the command from   |                            |  
+	the server.           |                            |  
+	                      |                            |  (Print the new balance)
+	                      |  <-------Print msg int---  |  Tells the client to print the specified string
+	                      |                            |  with the specified integer formatted into the string
+	                      |                            |  the msg code is the translated menu.)
+	
 
-Client: (Connected)
-Server: | 0x70 | .. | .. | 0x0B | (Note that the final byte is Failure & Unauthorized & Response)
-Client: | 0x70 | 112233 | 1234 | 0x04 |
-Server: | 0x50 | 1 | .. | .. | (Success)
+							...
+							
+							
+Language change and update
+--------------------------
 
-Command-agnostic input:
-
-Client: | 0x71 | 3 | .. | .. | (User selected option 3, deposit)
-Server: | 0x51 | 0x03 | .. | .. | (Server requests an int to be sent to command 0x03)
-Client: | 0x03 | 21 | .. | .. | (User wants to deposit 21, information is sent to server)
-
-
-
-
-
-
+	(User selects Change Language in the menu)
+	Collects one int      |  --------Menu Select---->  | 
+	and sends it to the   |                            | 
+	command specified     |                            | 
+	by the server in the  |                            | 
+	previous request.     |                            | 
+	                      |  <-------Print binary----  |  Print the currently available languages
+	                      |                            |  
+	                      |  <-------Request 1 int---  |  Asks for one int to be sent to language select(0x04),
+	                      |                            |  
+	                      |                            |  	                    
+	Collects one int      |  --------Lang select---->  | 
+	and sends it to the   |                            | 
+	command specified     |                            | 
+	by the server in the  |                            | 
+	previous request.     |                            | 
+	                      |                            |  (User selected Japanese, #3)
+	                      |  <-------Set language----  |  Sets the client language to 3
+	(Client does not have |                            | 
+	a local copy of the   | -Request lang download-->  | 
+	specified language)   |                            |                    
+	                      |                            | 
+	                      |  <-----Update language---  |  Sends the entire language file 
+	                      |                            |  using the binary format.
+	                      |                            | 
+	                      |  <-------Request 1 int---  |  Asks for one int to be sent to menu_select(0x71),
+	                      |                            |  after printing a selected msg code.(In this case,
+	                      |                            |  the msg code is the translated menu.)
+	                     	
+	                     	
+	                     	....
 
 

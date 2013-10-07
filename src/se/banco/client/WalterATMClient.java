@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Console;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -91,7 +92,7 @@ public class WalterATMClient implements PabloReciever {
 		listener = new PABLONetworkListener(in, this);
 		new Thread(listener).start();
 		
-		inputScanner = new Scanner(System.in);
+		inputScanner = new Scanner(new InputStreamReader(System.in, PABLO.CHARSET));
 		
 		while(isRunning) {
 			try {

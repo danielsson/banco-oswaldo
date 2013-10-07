@@ -4,6 +4,17 @@
 PABLO definition
 ================
 
+PABLO is a small protocol for controlling a wide array of internet services.
+We expect 95% of all internet traffic to consist of PABLO messages by 2015.
+The binary nature of PABLO makes encryption unnecessessary since nobody can
+read that stuff anyway.
+
+PABLO relies on the assumption that the client is dumb and shouldn't have to
+be updated whenever a server adds new features. To accomplish this, the client
+is command-agnostic and supports general input commands which enables the 
+client to collect inputs and display outputs without understanding the function
+of the individual commands.
+
 Protocol: Two formats: Binary-format and command-format.
 
 Binary format

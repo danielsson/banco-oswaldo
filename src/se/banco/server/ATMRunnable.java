@@ -14,7 +14,8 @@ import se.banco.server.handlers.ServerCommandHandler;
 
 
 /**
- * Listens to commands on the socket and returns 
+ * Handles a single connection to a user. The ATMRunnable will manage the state of the remote 
+ * user for as long as the connection is up.
  * 
  * @author mattias
  *
@@ -27,11 +28,9 @@ public class ATMRunnable implements Runnable {
 	private ServerCommandHandler handler;
 	private PABLONetworkListener networkListener;
 	
-	private Account account;
-	
-	
-	
 	private volatile boolean isRunning = true;
+
+	private Account account;
 	
 	public ATMRunnable(Socket socket, OswaldATMServer server) {
 		this.socket = socket;

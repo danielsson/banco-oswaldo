@@ -2,7 +2,6 @@ package se.banco.client;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.Console;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
@@ -12,17 +11,13 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.management.RuntimeErrorException;
-
-import com.sun.xml.internal.rngom.binary.PatternBuilder;
-
 import se.banco.lang.Language;
 import se.banco.lang.Strings;
 import se.banco.pablo.PABLO;
 import se.banco.pablo.PABLO.Command;
 import se.banco.pablo.PABLO.Flags;
-import se.banco.pablo.PABLOCommand;
 import se.banco.pablo.PABLOBinary;
+import se.banco.pablo.PABLOCommand;
 import se.banco.pablo.PABLONetworkListener;
 import se.banco.pablo.PABLONetworkListener.PabloReciever;
 import se.banco.server.Phrases;
@@ -98,8 +93,6 @@ public class WalterATMClient implements PabloReciever {
 			try {
 				//Recieve requests from the server.
 				serverCommand = queue.take();
-				PABLOCommand cmdToSend = new PABLOCommand();
-				int a = 0, b = 0;
 				
 				/*
 				 * The server sends one type of request to the client: The Request_*
@@ -110,23 +103,29 @@ public class WalterATMClient implements PabloReciever {
 				switch(serverCommand.getCode()) {
 				
 				case Command.REQUEST_1INT:
-					if(serverCommand.getNumber2() != 0) {
-						Strings.println(serverCommand.getNumber2(), locale);
-					}
-					
-					printCursor(1);
-					a = inputScanner.nextInt();
-					break;
-					
 				case Command.REQUEST_2INT:
+					PABLOCommand cmdToSend = new PABLOCommand();
+					cmdToSend.setCode(serverCommand.getNumber1());
+					
+					int a = 0, b = 0;
+					
 					if(serverCommand.getNumber2() != 0) {
 						Strings.println(serverCommand.getNumber2(), locale);
 					}
+
 					
 					printCursor(1);
 					a = inputScanner.nextInt();
-					printCursor(2);
-					b = inputScanner.nextInt();
+					
+					if(serverCommand.getCode() == Command.REQUEST_2INT) {
+						printCursor(2);
+						b = inputScanner.nextInt();
+					}
+					
+					cmdToSend.setNumber1(a);
+					cmdToSend.setNumber2(b);
+					cmdToSend.setFlags(Flags.RESPONSE);
+					cmdToSend.write(out);
 					break;
 					
 				case Command.REQUEST_STRING:
@@ -143,11 +142,11 @@ public class WalterATMClient implements PabloReciever {
 					ret.setData(input.getBytes(PABLO.CHARSET));
 					ret.write(out, Command.UPDATE_WELCOME);
 					
-					continue;
+					break;
 					
 				case Command.PRINT_MSG:
 					Strings.println(serverCommand.getNumber1(), locale);
-					continue;
+					break;
 					
 				case Command.PRINT_MSG_INT:
 					//Print the specified string formatted with the specified number.
@@ -156,7 +155,7 @@ public class WalterATMClient implements PabloReciever {
 							String.format(
 									Strings.get(serverCommand.getNumber1(), locale),
 									serverCommand.getNumber2()));
-					continue;
+					break;
 					
 				case Command.SET_LANG:
 					locale = serverCommand.getNumber1();
@@ -166,9 +165,7 @@ public class WalterATMClient implements PabloReciever {
 					} else {
 						new PABLOCommand(Command.NOP, 0, 0, Flags.REQUEST).write(out);
 					}
-					
-					continue;
-				
+									
 				case Command.BYE_BYE:
 					stop();
 					return;
@@ -176,14 +173,6 @@ public class WalterATMClient implements PabloReciever {
 				default:
 					System.err.println("Unknown server request: " + serverCommand);
 				}
-				
-				
-				cmdToSend.setCode(serverCommand.getNumber1());
-				cmdToSend.setNumber1(a);
-				cmdToSend.setNumber2(b);
-				cmdToSend.setFlags(Flags.RESPONSE);
-				
-				cmdToSend.write(out);
 				
 			} catch (NoSuchElementException ex) {
 				ex.printStackTrace();

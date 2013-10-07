@@ -10,7 +10,7 @@ The binary nature of PABLO makes encryption unnecessessary since nobody can
 read that stuff anyway.
 
 PABLO relies on the assumption that the client is dumb and shouldn't have to
-be updated whenever a server adds new features. To accomplish this, the client
+be updated whenever a server add new features. To accomplish this, the client
 is command-agnostic and supports general input commands which enables the 
 client to collect inputs and display outputs without understanding the function
 of the individual commands.
@@ -87,7 +87,6 @@ Command Codes and their fields:
 	0x03    | Deposit                 |   amount      |    -      |       |
 	0x04    | Language select         |   lang code   |    -      |       |
 	        |                         |               |           |       |
-	0x50    | login resp              |   0 if fail   |    -      |       | //Tell the client how the login attempt went.
 	0x51    | Request 1 int           |   return cmd  | msg code  |       |
 	0x52    | Request 2 int           |   return cmd  | msg code  |       |
 	0x53    | Request string          |   return cmd  | msg code  |       |
